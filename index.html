@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#FFFFFF">
+    <title>Hook App | Professional Tool</title>
+    
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss-cdn@3.4.1/tailwindcss.js"></script>
+    
+    <!-- PWA Assets -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBk99RmIn2McXhLlMV4huc2iTUGONc7Zig",
+            authDomain: "rootscalc-1c302.firebaseapp.com",
+            projectId: "rootscalc-1c302",
+            storageBucket: "rootscalc-1c302.firebasestorage.app",
+            messagingSenderId: "466620468252",
+            appId: "1:466620468252:web:e65ad3b731f4315f06a3d9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'rootscalc-pro';
+
+        window.firebaseTools = { db, auth, appId, doc, getDoc, updateDoc, setDoc, signInAnonymously };
+        signInAnonymously(auth).catch(err => console.error("Firebase Auth Error:", err.code));
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --charcoal: #111827; 
+            --soft-gray: #9CA3AF; 
+            --border: #E5E7EB; 
+            --bg-main: #FFFFFF;
+            --text-main: #111827;
+            --panel-bg: #FFFFFF;
+            --header-bg: rgba(255, 255, 255, 0.85);
+            --thumb-bg: #FFFFFF;
+        }
+
+        body.contrast-mode {
+            --bg-main: #000000;
+            --text-main: #FFFFFF;
+            --charcoal: #FFFFFF;
+            --soft-gray: #6B7280;
+            --border: #262626;
+            --panel-bg: #000000;
+            --header-bg: rgba(0, 0, 0, 0.85);
+            --thumb-bg: #000000;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; overflow-x: hidden; user-select: none; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
+        
+        /* Preloader */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #FFFFFF; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10000;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .preloader-logo { width: 80px; height: 80px; margin-bottom: 1.5rem; object-fit: contain; }
+        .preloader-title { font-size: 0.85rem; letter-spacing: 0.4em; text-transform: uppercase; font-weight: 700; color: #111827; margin-bottom: 2.5rem; }
+        .spinner { width: 24px; height: 24px; border: 2px solid rgba(17, 24, 39, 0.05); border-top-color: #111827; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #splatterCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+        
+        .sticky-header { position: sticky; top: 0; z-index: 50; background: var(--header-bg); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .header-title { letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700; font-size: 0.8rem; }
+        .demo-timer { font-size: 0.7rem; font-weight: 700; color: #EF4444; letter-spacing: 0.1em; }
+        .info-btn { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid var(--charcoal); padding: 0.4rem 0.8rem; cursor: pointer; font-weight: 600; color: var(--text-main); }
+        
+        .main-container { max-width: 600px; margin: 0 auto; padding: 2rem 1.5rem 14rem; }
+        
+        #lockOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-main); z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; text-align: center; }
+        .key-input { width: 100%; max-width: 300px; border: 1px solid var(--charcoal); background: transparent; color: var(--text-main); padding: 1rem; margin: 1.5rem 0; text-align: center; font-family: monospace; letter-spacing: 2px; text-transform: uppercase; outline: none; }
+        
+        .section-label { letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.6rem; font-weight: 600; color: var(--soft-gray); margin-bottom: 1.5rem; display: block; }
+        .input-group { border-bottom: 1px solid var(--border); padding-bottom: 2rem; margin-bottom: 2rem; }
+        
+        .service-selector { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 3rem; }
+        .service-option { flex: 1; background: var(--bg-main); padding: 1rem; text-align: center; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.15em; font-weight: 500; transition: all 0.2s; color: var(--text-main); }
+        .service-option.active { background: var(--charcoal); color: var(--bg-main); }
+        
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 1px; background: var(--border); outline: none; margin: 1.5rem 0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--thumb-bg); border: 1px solid var(--charcoal); border-radius: 50%; cursor: pointer; }
+        
+        .display-value { font-weight: 100; font-size: 3.5rem; line-height: 1; letter-spacing: -0.02em; }
+        .unit { font-size: 0.9rem; color: var(--soft-gray); margin-left: 0.5rem; font-weight: 300; }
+        
+        .custom-checkbox { display: flex; align-items: center; cursor: pointer; padding: 0.75rem 0; }
+        .custom-checkbox input { display: none; }
+        .checkmark { width: 20px; height: 20px; border: 1px solid var(--charcoal); margin-right: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .custom-checkbox input:checked + .checkmark { background: var(--charcoal); }
+        .custom-checkbox input:checked + .checkmark::after { content: ''; width: 6px; height: 6px; background: var(--bg-main); }
+        
+        .sub-control { max-height: 0; overflow: hidden; padding-left: 2rem; border-left: 1px solid var(--border); opacity: 0; transition: all 0.4s ease; }
+        .sub-control.active { max-height: 500px; opacity: 1; margin-top: 1rem; margin-bottom: 2rem; }
+        
+        .result-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel-bg); border-top: 1px solid var(--charcoal); padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; z-index: 40; }
+        .price-display { font-weight: 100; font-size: 4rem; letter-spacing: -0.05em; line-height: 1; }
+        
+        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-main); z-index: 100; display: none; overflow-y: auto; padding: 2rem 1.5rem; color: var(--text-main); }
+        .settings-table { width: 100%; margin-bottom: 2rem; }
+        .settings-table td { padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
+        .settings-table input { width: 80px; border: 1px solid var(--border); background: transparent; color: var(--text-main); padding: 0.3rem; text-align: right; font-weight: 600; outline: none; }
+        
+        .save-btn { background: var(--charcoal); color: var(--bg-main); width: 100%; padding: 1.2rem; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem; font-weight: 700; transition: opacity 0.2s; }
+        .save-btn:active { opacity: 0.7; }
+        .hidden-element { display: none !important; }
+        .theme-switch-row { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <img src="logo.svg" alt="Hook App" class="preloader-logo" onerror="this.style.display='none'">
+        <div class="preloader-title">Hook App</div>
+        <div class="spinner"></div>
+    </div>
+
+    <canvas id="splatterCanvas"></canvas>
+
+    <div id="lockOverlay">
+        <div class="header-title mb-8">Hook App</div>
+        <p class="text-xs uppercase tracking-widest text-gray-400 mb-2 text-main">Пробный период завершен</p>
+        <h2 class="text-xl font-light mb-6">Активация устройства</h2>
+        <input type="text" id="activationKey" class="key-input" placeholder="XXXX-XXXX-XXXX" autocomplete="off">
+        <button id="activateBtn" onclick="checkKey()" class="save-btn max-w-[300px]">Активировать</button>
+        <p id="keyError" class="mt-4 text-[10px] text-red-500 uppercase tracking-widest hidden">Ошибка</p>
+        <div class="mt-10 pt-10 border-t w-full max-w-[300px] border-border">
+            <p class="text-[9px] uppercase tracking-widest text-gray-400">ID устройства:</p>
+            <p id="deviceIdLabel" class="text-[9px] font-mono mt-1 opacity-50">загрузка...</p>
+        </div>
+    </div>
+
+    <header class="sticky-header">
+        <div class="header-title">Hook App</div>
+        <div id="demoTimer" class="demo-timer">DEMO 03:00</div>
+        <div class="info-btn" onclick="toggleModal(true)">Настройки</div>
+    </header>
+
+    <div id="modalOverlay">
+        <div class="max-w-xl mx-auto pb-20">
+            <div class="flex justify-between items-center mb-10">
+                <span class="section-label" style="margin-bottom:0">Конфигуратор</span>
+                <button onclick="toggleModal(false)" class="text-3xl font-light p-2">&times;</button>
+            </div>
+            <div class="theme-switch-row">
+                <span class="text-[0.65rem] font-bold uppercase tracking-widest">Черная тема (Инверсия)</span>
+                <label class="custom-checkbox" style="padding:0" onclick="toggleContrast(event)">
+                    <input type="checkbox" id="contrastToggle"><span class="checkmark" style="margin-right:0"></span>
+                </label>
+            </div>
+            <div class="mb-10">
+                <h3 class="section-label">Плетение натуральных дред</h3>
+                <table class="settings-table">
+                    <tr><td class="text-sm">База (до 10 см)</td><td><input type="number" id="price_base" value="300"> ₽</td></tr>
+                    <tr><td class="text-sm">Шаг за каждые 10 см</td><td><input type="number" id="price_step" value="200"> ₽</td></tr>
+                </table>
+            </div>
+            <div class="mb-10">
+                <h3 class="section-label">Коррекция и дополнения</h3>
+                <table class="settings-table">
+                    <tr><td class="text-sm">Коррекция (база/шт)</td><td><input type="number" id="price_corr_base" value="150"> ₽</td></tr>
+                    <tr><td class="text-sm">Тупой кончик (шт)</td><td><input type="number" id="price_blunt" value="50"> ₽</td></tr>
+                    <tr><td class="text-sm">Сращивание (шт)</td><td><input type="number" id="price_fusion" value="50"> ₽</td></tr>
+                    <tr><td class="text-sm">Корр. длины (за 10см)</td><td><input type="number" id="price_corr_len" value="50"> ₽</td></tr>
+                    <tr><td class="text-sm">Прикорневое (шт)</td><td><input type="number" id="price_root" value="30"> ₽</td></tr>
+                </table>
+            </div>
+            <button onclick="saveSettings()" class="save-btn mb-12">Применить настройки</button>
+            <div class="border-t border-gray-100 pt-8 text-center">
+                <div class="text-[0.7rem] font-bold uppercase tracking-[0.4em] opacity-80 mb-1">Hook App</div>
+                <div class="text-[0.6rem] text-gray-400 uppercase tracking-widest">Version 3.4.0 Professional Edition</div>
+            </div>        
+        </div>
+    </div>
+
+    <main class="main-container">
+        <span class="section-label">00. Категория работ</span>
+        <div class="service-selector">
+            <div id="typeCreation" class="service-option active" onclick="setService('creation', event)">Плетение</div>
+            <div id="typeCorrection" class="service-option" onclick="setService('correction', event)">Коррекция</div>
+        </div>
+        <div class="input-group">
+            <span class="section-label">01. Количество дред</span>
+            <div class="flex items-baseline"><span id="countVal" class="display-value">50</span><span class="unit">шт</span></div>
+            <input type="range" id="countRange" min="0" max="150" value="50">
+        </div>
+        <div id="groupLength" class="input-group">
+            <span class="section-label">02. Общая длина</span>
+            <div class="flex items-baseline"><span id="lengthVal" class="display-value">10</span><span class="unit">см</span></div>
+            <input type="range" id="lengthRange" min="5" max="100" value="10">
+        </div>
+        <div id="groupAddons" class="input-group" style="border-bottom:none">
+            <span class="section-label">03. Опции</span>
+            <label class="custom-checkbox" onclick="handleCheck(event)">
+                <input type="checkbox" id="bluntEndToggle"><span class="checkmark"></span>
+                <span id="label_blunt" class="text-[0.65rem] font-bold uppercase tracking-widest text-main">Тупой кончик</span>
+            </label>
+            <div id="bluntEndControl" class="sub-control">
+                <div class="flex items-baseline"><span id="bluntCountVal" class="display-value text-2xl">50</span><span class="unit">шт</span></div>
+                <input type="range" id="bluntCountRange" min="0" max="150" value="50">
+            </div>
+            <label class="custom-checkbox mt-2" onclick="handleCheck(event)">
+                <input type="checkbox" id="fusionToggle"><span class="checkmark"></span>
+                <span id="label_fusion" class="text-[0.65rem] font-bold uppercase tracking-widest text-main">Сращивание</span>
+            </label>
+            <div id="fusionControl" class="sub-control">
+                <div class="flex items-baseline"><span id="fusionCountVal" class="display-value text-2xl">50</span><span class="unit">шт</span></div>
+                <input type="range" id="fusionCountRange" min="0" max="150" value="50">
+            </div>
+        </div>
+        <div id="groupAddonsCorr" class="input-group hidden-element" style="border-bottom:none">
+            <span class="section-label">03. Опции коррекции</span>
+            <label class="custom-checkbox" onclick="handleCheck(event)">
+                <input type="checkbox" id="corrLengthToggle"><span class="checkmark"></span>
+                <span id="label_corr_len" class="text-[0.65rem] font-bold uppercase tracking-widest text-main">Коррекция длины</span>
+            </label>
+            <div id="corrLengthControl" class="sub-control">
+                <div class="mb-4">
+                    <span class="section-label" style="font-size:0.5rem">Кол-во</span>
+                    <div class="flex items-baseline"><span id="clcVal" class="display-value text-2xl">50</span><span class="unit">шт</span></div>
+                    <input type="range" id="clcRange" min="0" max="150" value="50">
+                </div>
+                <div>
+                    <span class="section-label" style="font-size:0.5rem">Длина</span>
+                    <div class="flex items-baseline"><span id="clcmVal" class="display-value text-2xl">10</span><span class="unit">см</span></div>
+                    <input type="range" id="clcmRange" min="10" max="100" step="10" value="10">
+                </div>
+            </div>
+            <label class="custom-checkbox mt-2" onclick="handleCheck(event)">
+                <input type="checkbox" id="rootToggle"><span class="checkmark"></span>
+                <span id="label_root" class="text-[0.65rem] font-bold uppercase tracking-widest text-main">Прикорневое</span>
+            </label>
+            <div id="rootControl" class="sub-control">
+                <div class="flex items-baseline"><span id="rootCountVal" class="display-value text-2xl">50</span><span class="unit">шт</span></div>
+                <input type="range" id="rootCountRange" min="0" max="150" value="50">
+            </div>
+        </div>
+    </main>
+
+    <div class="result-panel">
+        <span class="section-label">Итоговая стоимость</span>
+        <div class="flex items-baseline">
+            <span id="totalPrice" class="price-display">0</span>
+            <span class="text-xl font-light ml-4 opacity-50">₽</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // --- ТЕМЫ ---
+            window.toggleContrast = function(e) {
+                if(e) e.stopPropagation();
+                const isContrast = document.getElementById('contrastToggle').checked;
+                document.body.classList.toggle('contrast-mode', isContrast);
+                localStorage.setItem('dm_contrast', isContrast);
+                pColor = isContrast ? '#FFFFFF' : '#111827';
+                if(e) playBubbleSound();
+            };
+
+            const savedContrast = localStorage.getItem('dm_contrast') === 'true';
+            document.getElementById('contrastToggle').checked = savedContrast;
+            document.body.classList.toggle('contrast-mode', savedContrast);
+            let pColor = savedContrast ? '#FFFFFF' : '#111827';
+
+            // --- ID устройства ---
+            let deviceId = localStorage.getItem('dm_device_id') || crypto.randomUUID();
+            localStorage.setItem('dm_device_id', deviceId);
+            document.getElementById('deviceIdLabel').innerText = deviceId;
+
+            // --- Безопасность ---
+            let isActivated = localStorage.getItem('dm_active') === 'true';
+            const DEMO_DURATION = 180; 
+
+            window.initSecurity = async function() {
+                if (isActivated) {
+                    document.getElementById('demoTimer').style.display = 'none';
+                    return;
+                }
+                const timerEl = document.getElementById('demoTimer');
+                const lockOverlay = document.getElementById('lockOverlay');
+
+                let firstLaunch;
+                try {
+                    const { db, appId, doc, getDoc, setDoc, auth, signInAnonymously } = window.firebaseTools;
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                    const deviceRef = doc(db, 'artifacts', appId, 'public', 'data', 'devices', deviceId);
+                    const snap = await getDoc(deviceRef);
+                    if (snap.exists()) firstLaunch = snap.data().firstLaunch;
+                    else {
+                        firstLaunch = Date.now();
+                        await setDoc(deviceRef, { firstLaunch, deviceId });
+                    }
+                } catch (e) { firstLaunch = parseInt(localStorage.getItem('dm_first_launch')) || Date.now(); }
+                localStorage.setItem('dm_first_launch', firstLaunch);
+
+                const updateTimer = () => {
+                    const elapsed = Math.floor((Date.now() - firstLaunch) / 1000);
+                    const left = Math.max(0, DEMO_DURATION - elapsed);
+                    if (left <= 0) { lockOverlay.style.display = 'flex'; return true; }
+                    const m = Math.floor(left/60), s = left%60;
+                    timerEl.innerText = `DEMO ${m}:${s < 10 ? '0' : ''}${s}`;
+                    return false;
+                };
+                if (!updateTimer()) setInterval(updateTimer, 1000);
+            };
+
+            window.checkKey = async function() {
+                const btn = document.getElementById('activateBtn');
+                const err = document.getElementById('keyError');
+                const key = document.getElementById('activationKey').value.trim().toUpperCase();
+                if (!key) return;
+                btn.disabled = true; btn.innerText = "...";
+                try {
+                    const { db, appId, doc, getDoc, updateDoc, auth, signInAnonymously } = window.firebaseTools;
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                    const keyRef = doc(db, 'artifacts', appId, 'public', 'data', 'keys', key);
+                    const snap = await getDoc(keyRef);
+                    if (snap.exists() && (!snap.data().usedBy || snap.data().usedBy === deviceId)) {
+                        await updateDoc(keyRef, { usedBy: deviceId });
+                        localStorage.setItem('dm_active', 'true');
+                        location.reload();
+                    } else throw new Error("Key busy or invalid");
+                } catch (e) { err.innerText = "Ошибка ключа"; err.classList.remove('hidden'); }
+                btn.disabled = false; btn.innerText = "Активировать";
+            };
+
+            // --- Звуки ---
+            let audioCtx;
+            window.playBubbleSound = function() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400 + Math.random()*200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            };
+
+            // --- Калькулятор ---
+            let config = { price_base:300, price_step:200, price_corr_base:150, price_blunt:50, price_fusion:50, price_corr_len:50, price_root:30 };
+            window.loadSettings = () => {
+                const s = localStorage.getItem('dm_cfg');
+                if(s) config = JSON.parse(s);
+                Object.keys(config).forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = config[k]; });
+                updateLabels();
+            };
+            window.saveSettings = () => {
+                Object.keys(config).forEach(k => config[k] = parseInt(document.getElementById(k).value) || 0);
+                localStorage.setItem('dm_cfg', JSON.stringify(config));
+                updateLabels(); calculateTotal(); toggleModal(false); playBubbleSound();
+            };
+            const updateLabels = () => {
+                document.getElementById('label_blunt').innerText = `Тупой кончик (+${config.price_blunt}₽)`;
+                document.getElementById('label_fusion').innerText = `Сращивание (+${config.price_fusion}₽)`;
+                document.getElementById('label_corr_len').innerText = `Длина (+${config.price_corr_len}₽)`;
+                document.getElementById('label_root').innerText = `Прикорневое (+${config.price_root}₽)`;
+            };
+
+            // --- Частицы ---
+            const canvas = document.getElementById('splatterCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+            window.onresize = resize; resize();
+            class P {
+                constructor(x,y) { this.x=x; this.y=y; this.s=Math.random()*2.5; this.vx=Math.random()*4-2; this.vy=Math.random()*4-2; this.o=1; }
+                u() { this.x+=this.vx; this.y+=this.vy; this.o-=0.04; }
+                d() { ctx.fillStyle=pColor; ctx.globalAlpha=this.o; ctx.beginPath(); ctx.arc(this.x,this.y,this.s,0,Math.PI*2); ctx.fill(); }
+            }
+            window.triggerSplatter = (e) => {
+                const r = e.target.getBoundingClientRect();
+                for(let i=0; i<10; i++) particles.push(new P(r.left+r.width/2, r.top+r.height/2));
+                playBubbleSound();
+            };
+            const anim = () => {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                particles = particles.filter(p => p.o > 0);
+                particles.forEach(p => { p.u(); p.d(); });
+                requestAnimationFrame(anim);
+            };
+            anim();
+
+            // --- UI ---
+            let service = 'creation';
+            window.toggleModal = (s) => { document.getElementById('modalOverlay').style.display = s?'block':'none'; if(s) playBubbleSound(); };
+            window.setService = (t, e) => {
+                service = t;
+                document.getElementById('typeCreation').classList.toggle('active', t==='creation');
+                document.getElementById('typeCorrection').classList.toggle('active', t==='correction');
+                document.getElementById('groupLength').classList.toggle('hidden-element', t==='correction');
+                document.getElementById('groupAddons').classList.toggle('hidden-element', t==='correction');
+                document.getElementById('groupAddonsCorr').classList.toggle('hidden-element', t==='creation');
+                triggerSplatter(e); calculateTotal();
+            };
+            window.handleCheck = (e) => { triggerSplatter(e); setTimeout(calculateTotal, 50); };
+            const ids = ['countRange','lengthRange','bluntCountRange','fusionCountRange','clcRange','clcmRange','rootCountRange','bluntEndToggle','fusionToggle','corrLengthToggle','rootToggle'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.oninput = (e) => { if(e.target.type==='range') playBubbleSound(); updateUI(); calculateTotal(); };
+            });
+
+            window.updateUI = () => {
+                const get = (id) => document.getElementById(id);
+                get('countVal').innerText = get('countRange').value;
+                get('lengthVal').innerText = get('lengthRange').value;
+                get('bluntCountVal').innerText = get('bluntCountRange').value;
+                get('fusionCountVal').innerText = get('fusionCountRange').value;
+                get('clcVal').innerText = get('clcRange').value;
+                get('clcmVal').innerText = get('clcmRange').value;
+                get('rootCountVal').innerText = get('rootCountRange').value;
+                get('bluntEndControl').classList.toggle('active', get('bluntEndToggle').checked);
+                get('fusionControl').classList.toggle('active', get('fusionToggle').checked);
+                get('corrLengthControl').classList.toggle('active', get('corrLengthToggle').checked);
+                get('rootControl').classList.toggle('active', get('rootToggle').checked);
+            };
+
+            window.calculateTotal = () => {
+                let total = 0;
+                const count = parseInt(document.getElementById('countRange').value);
+                const get = (id) => document.getElementById(id);
+                if(service === 'creation') {
+                    const len = parseInt(get('lengthRange').value);
+                    let p = config.price_base;
+                    if(len > 10) p += Math.ceil((len - 10) / 10) * config.price_step;
+                    total = count * p;
+                    if(get('bluntEndToggle').checked) total += parseInt(get('bluntCountRange').value) * config.price_blunt;
+                    if(get('fusionToggle').checked) total += parseInt(get('fusionCountRange').value) * config.price_fusion;
+                } else {
+                    total = count * config.price_corr_base;
+                    if(get('corrLengthToggle').checked) total += parseInt(get('clcRange').value) * (parseInt(get('clcmRange').value) / 10 * config.price_corr_len);
+                    if(get('rootToggle').checked) total += parseInt(get('rootCountRange').value) * config.price_root;
+                }
+                const d = document.getElementById('totalPrice');
+                const start = parseInt(d.innerText.replace(/\s/g, '')) || 0;
+                const dur = 250, stTs = performance.now();
+                const step = (ts) => {
+                    const p = Math.min((ts - stTs) / dur, 1);
+                    d.innerText = Math.floor(start + (total - start) * p).toLocaleString();
+                    if(p < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            };
+
+            window.onload = () => { 
+                loadSettings(); updateUI(); calculateTotal(); initSecurity(); 
+                // Скрытие прелоадера через 2 секунды
+                setTimeout(() => {
+                    const p = document.getElementById('preloader');
+                    p.style.opacity = '0';
+                    setTimeout(() => p.style.display = 'none', 800);
+                }, 2000);
+                if (typeof vkBridge !== 'undefined') vkBridge.send('VKWebAppInit').catch(() => {});
+            };
+        })();
+    </script>
+</body>
+</html>
