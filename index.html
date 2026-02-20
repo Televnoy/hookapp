@@ -70,7 +70,6 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; overflow-x: hidden; user-select: none; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
         #splatterCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
         
-        /* Preloader Styles */
         #preloader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #FFFFFF; z-index: 5000;
@@ -87,7 +86,7 @@
 
         .sticky-header { position: sticky; top: 0; z-index: 50; background: var(--header-bg); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .header-title { letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700; font-size: 0.8rem; }
-        .demo-timer { font-size: 0.7rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.1em; } /* Таймер черным по умолчанию */
+        .demo-timer { font-size: 0.7rem; font-weight: 700; color: #000000; letter-spacing: 0.1em; } 
         .info-btn { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid var(--charcoal); padding: 0.4rem 0.8rem; cursor: pointer; font-weight: 600; color: var(--text-main); }
         
         .main-container { max-width: 600px; margin: 0 auto; padding: 2rem 1.5rem 14rem; }
@@ -128,13 +127,11 @@
         .save-btn { background: var(--charcoal); color: var(--bg-main); width: 100%; padding: 1.2rem; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem; font-weight: 700; transition: opacity 0.2s; }
         .save-btn:active { opacity: 0.7; }
         .hidden-element { display: none !important; }
-
         .theme-switch-row { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
     </style>
 </head>
 <body>
 
-    <!-- Preloader Screen -->
     <div id="preloader">
         <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#111827"/>
@@ -147,7 +144,7 @@
 
     <div id="lockOverlay">
         <div class="header-title mb-8">Hook App</div>
-        <p class="text-xs uppercase tracking-widest text-gray-400 mb-2 text-main">Пробный период завершен</p>
+        <p class="text-xs uppercase tracking-widest text-gray-400 mb-2">Пробный период завершен</p>
         <h2 class="text-xl font-light mb-6">Активация устройства</h2>
         <input type="text" id="activationKey" class="key-input" placeholder="XXXX-XXXX-XXXX" autocomplete="off">
         <button id="activateBtn" onclick="checkKey()" class="save-btn max-w-[300px]">Активировать</button>
@@ -170,14 +167,12 @@
                 <span class="section-label" style="margin-bottom:0">Конфигуратор</span>
                 <button onclick="toggleModal(false)" class="text-3xl font-light p-2">&times;</button>
             </div>
-
             <div class="theme-switch-row">
                 <span class="text-[0.65rem] font-bold uppercase tracking-widest">Черная тема (Инверсия)</span>
                 <label class="custom-checkbox" style="padding:0" onclick="toggleContrast(event)">
                     <input type="checkbox" id="contrastToggle"><span class="checkmark" style="margin-right:0"></span>
                 </label>
             </div>
-
             <div class="mb-10">
                 <h3 class="section-label">Плетение натуральных дред</h3>
                 <table class="settings-table">
@@ -188,7 +183,7 @@
             <div class="mb-10">
                 <h3 class="section-label">Коррекция и дополнения</h3>
                 <table class="settings-table">
-                    <tr><td class="text-sm">Коррекция (база/шт)</td><td><input type="number" id="price_corr_base" value="150"> ₽</td></tr>
+                    <tr><td class="text-sm">Подплетение (база/шт)</td><td><input type="number" id="price_corr_base" value="150"> ₽</td></tr>
                     <tr><td class="text-sm">Тупой кончик (шт)</td><td><input type="number" id="price_blunt" value="50"> ₽</td></tr>
                     <tr><td class="text-sm">Сращивание (шт)</td><td><input type="number" id="price_fusion" value="50"> ₽</td></tr>
                     <tr><td class="text-sm">Корр. длины (за 10см)</td><td><input type="number" id="price_corr_len" value="50"> ₽</td></tr>
@@ -196,19 +191,14 @@
                 </table>
             </div>
             <button onclick="saveSettings()" class="save-btn mb-12">Применить настройки</button>
-            <div class="border-t border-gray-100 pt-8 text-center">
-                <div class="text-[0.7rem] font-bold uppercase tracking-[0.4em] opacity-80 mb-1">Hook App</div>
-                <div class="text-[0.6rem] text-gray-400 uppercase tracking-widest">Version 1.4.0 Professional Edition</div>
-            </div>        
         </div>
     </div>
 
     <main class="main-container">
-        <!-- Контент калькулятора (без изменений) -->
         <span class="section-label">00. Категория работ</span>
         <div class="service-selector">
             <div id="typeCreation" class="service-option active" onclick="setService('creation', event)">Плетение</div>
-            <div id="typeCorrection" class="service-option" onclick="setService('correction', event)">Коррекция</div>
+            <div id="typeCorrection" class="service-option" onclick="setService('correction', event)">Подплетение</div>
         </div>
         <div class="input-group">
             <span class="section-label">01. Количество дред</span>
@@ -252,7 +242,7 @@
                     <input type="range" id="clcRange" min="0" max="150" value="50">
                 </div>
                 <div>
-                    <span class="section-label" style="font-size:0.5rem">Длина</span>
+                    <span class="section-label" style="font-size:0.5rem">Коррекция по длине</span>
                     <div class="flex items-baseline"><span id="clcmVal" class="display-value text-2xl">10</span><span class="unit">см</span></div>
                     <input type="range" id="clcmRange" min="10" max="100" step="10" value="10">
                 </div>
@@ -277,6 +267,15 @@
     </div>
 
     <script>
+        // РЕГИСТРАЦИЯ SERVICE WORKER
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW Registered'))
+                .catch(err => console.log('SW Error: ', err));
+            });
+        }
+
         (function() {
             // --- ТЕМЫ ---
             window.toggleContrast = function(e) {
@@ -293,14 +292,13 @@
             document.body.classList.toggle('contrast-mode', savedContrast);
             let pColor = savedContrast ? '#FFFFFF' : '#111827';
 
-            // --- Постоянный ID устройства ---
+            // --- БЕЗОПАСНОСТЬ И ТАЙМЕР ---
             let deviceId = localStorage.getItem('dm_device_id') || crypto.randomUUID();
             localStorage.setItem('dm_device_id', deviceId);
             if (document.getElementById('deviceIdLabel')) document.getElementById('deviceIdLabel').innerText = deviceId;
 
-            // --- Состояние активации и ТАЙМЕР (30 МИНУТ) ---
             let isActivated = localStorage.getItem('dm_active') === 'true';
-            const DEMO_DURATION_SECONDS = 1800; // 30 минут
+            const DEMO_DURATION = 1800; // 30 минут
 
             window.initSecurity = async function() {
                 if (isActivated) {
@@ -334,56 +332,41 @@
                 const runTimer = () => {
                     const now = Date.now();
                     const elapsed = Math.floor((now - firstLaunch) / 1000);
-                    const timeLeft = Math.max(0, DEMO_DURATION_SECONDS - elapsed);
-
+                    const timeLeft = Math.max(0, DEMO_DURATION - elapsed);
                     if (timeLeft <= 0) {
                         if (timerEl) timerEl.innerText = "DEMO 00:00";
                         if (lockOverlay) lockOverlay.style.display = 'flex';
                         return true;
                     }
-
                     const m = Math.floor(timeLeft / 60);
                     const s = timeLeft % 60;
                     if (timerEl) timerEl.innerText = `DEMO ${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
                     return false;
                 };
 
-                if (!runTimer()) {
-                    const interval = setInterval(() => {
-                        if (runTimer()) clearInterval(interval);
-                    }, 1000);
-                }
+                if (!runTimer()) setInterval(runTimer, 1000);
             };
 
             window.checkKey = async function() {
                 const btn = document.getElementById('activateBtn');
                 const errEl = document.getElementById('keyError');
                 const key = document.getElementById('activationKey').value.trim().toUpperCase();
-                
                 if (!key) return;
                 btn.disabled = true;
                 btn.innerText = "Проверка...";
-                errEl.classList.add('hidden');
-
                 try {
                     const { db, appId, doc, getDoc, updateDoc, auth, signInAnonymously } = window.firebaseTools;
                     if (!auth.currentUser) await signInAnonymously(auth);
-
                     const keyRef = doc(db, 'artifacts', appId, 'public', 'data', 'keys', key);
                     const snap = await getDoc(keyRef);
-
                     if (snap.exists()) {
                         const data = snap.data();
                         if (!data.usedBy || data.usedBy === deviceId) {
                             await updateDoc(keyRef, { usedBy: deviceId, activatedAt: new Date().toISOString() });
                             localStorage.setItem('dm_active', 'true');
                             location.reload();
-                        } else {
-                            throw new Error("Ключ уже занят");
-                        }
-                    } else {
-                        throw new Error("Неверный ключ");
-                    }
+                        } else throw new Error("Ключ занят");
+                    } else throw new Error("Неверный ключ");
                 } catch (e) {
                     errEl.innerText = e.message;
                     errEl.classList.remove('hidden');
@@ -393,22 +376,7 @@
                 }
             };
 
-            // --- Остальные функции (Звуки, Калькулятор, Частицы) без изменений функционала ---
-            let audioCtx;
-            window.playBubbleSound = function() {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400 + Math.random()*400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            };
-
+            // --- КАЛЬКУЛЯТОР ---
             let config = { price_base:300, price_step:200, price_corr_base:150, price_blunt:50, price_fusion:50, price_corr_len:50, price_root:30 };
             
             window.loadSettings = function() {
@@ -445,6 +413,20 @@
                 u() { this.x+=this.vx; this.y+=this.vy; this.o-=0.05; }
                 d() { ctx.fillStyle=pColor; ctx.globalAlpha=this.o; ctx.beginPath(); ctx.arc(this.x,this.y,this.s,0,Math.PI*2); ctx.fill(); }
             }
+
+            let audioCtx;
+            window.playBubbleSound = function() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400 + Math.random()*400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            };
 
             window.triggerSplatter = function(e) {
                 const r = e.target.getBoundingClientRect();
@@ -522,15 +504,8 @@
             };
 
             window.onload = () => { 
-                setTimeout(() => {
-                    const preloader = document.getElementById('preloader');
-                    if (preloader) preloader.classList.add('hidden');
-                }, 2500);
-
-                loadSettings(); 
-                updateUI(); 
-                calculateTotal(); 
-                initSecurity(); 
+                setTimeout(() => document.getElementById('preloader')?.classList.add('hidden'), 1500);
+                loadSettings(); updateUI(); calculateTotal(); initSecurity(); 
                 if (typeof vkBridge !== 'undefined') vkBridge.send('VKWebAppInit').catch(() => {});
             };
         })();
