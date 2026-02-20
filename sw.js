@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hook-app-v1';
+const CACHE_NAME = 'hook-app-v2';
 const ASSETS = [
   './',
   './index.html',
