@@ -245,7 +245,7 @@ fill="#111827"
                     <input type="range" id="clcRange" min="0" max="150" value="50">
                 </div>
                 <div>
-                    <span class="section-label" style="font-size:0.5rem">Коррекция по длине</span>
+                    <span class="section-label" style="font-size:0.5rem">Длина</span>
                     <div class="flex items-baseline"><span id="clcmVal" class="display-value text-2xl">10</span><span class="unit">см</span></div>
                     <input type="range" id="clcmRange" min="10" max="100" step="10" value="10">
                 </div>
@@ -401,7 +401,7 @@ fill="#111827"
             function updateLabels() {
                 if (document.getElementById('label_blunt')) document.getElementById('label_blunt').innerText = `Тупой кончик (+${config.price_blunt}₽)`;
                 if (document.getElementById('label_fusion')) document.getElementById('label_fusion').innerText = `Сращивание (+${config.price_fusion}₽)`;
-                if (document.getElementById('label_corr_len')) document.getElementById('label_corr_len').innerText = `Сращивание по длине (+${config.price_corr_len}₽)`;
+                if (document.getElementById('label_corr_len')) document.getElementById('label_corr_len').innerText = `Коррекция по длине (+${config.price_corr_len}₽)`;
                 if (document.getElementById('label_root')) document.getElementById('label_root').innerText = `Прикорневое валяние (+${config.price_root}₽)`;
             }
 
